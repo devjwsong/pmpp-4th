@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define TILE_WIDTH 2
+#define GRID_DIM 4
+#define BLOCK_DIM 4
+#define TILE_WIDTH 4
 
 
 /*
@@ -24,7 +26,7 @@ __global__ void matrixMulKernel(float *M, float *N, float* P, int M_height, int 
 
     // Loop over each phase. The number of phase is WIDTH/TILE_WIDTH.
     float pvalue = 0.0f;
-    for (int ph=0; ph<ceil(M_width/ (float) TILE_WIDTH); ++ph) {
+    for (int ph=0; ph<ceil(N_width/ (float) TILE_WIDTH); ++ph) {
         // Boundary check for M.
         if ((row < M_height) && ((ph * TILE_WIDTH + tx) < M_width)) {
             Mds[ty][tx] = M[row * M_width + ph * TILE_WIDTH + tx];
@@ -57,10 +59,6 @@ __global__ void matrixMulKernel(float *M, float *N, float* P, int M_height, int 
 
 
 int main() {
-    int gridDim, blockDim;
-    printf("[Grid size & Block size]:\n");
-    scanf("%d %d", &gridDim, &blockDim);
-
     int M_height, M_width, N_width;
     printf("[Matrix 1 Height]:\n");
     scanf("%d", &M_height);
@@ -96,7 +94,7 @@ int main() {
     cudaMemcpy(N_d, N_h, M_width * N_width * sizeof(float), cudaMemcpyHostToDevice);
 
     // Execute the kernel function.
-    matrixMulKernel<<<dim3(gridDim, gridDim), dim3(blockDim, blockDim)>>>(M_d, N_d, P_d, M_height, M_width, N_width);
+    matrixMulKernel<<<dim3(GRID_DIM, GRID_DIM), dim3(BLOCK_DIM, BLOCK_DIM)>>>(M_d, N_d, P_d, M_height, M_width, N_width);
 
     // Copy the values in P from device to host.
     cudaMemcpy(P_h, P_d, M_height * N_width * sizeof(float), cudaMemcpyDeviceToHost);

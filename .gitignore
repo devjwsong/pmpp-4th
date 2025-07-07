@@ -10,3 +10,6 @@
 
 # Binary file.
 executable
+
+# Test case files.
+testcase*
